@@ -60,6 +60,7 @@ class PortalSmasher
     
     if file
       @knownnetworks = YAML.load_file(file)
+      print @knownnetworks
     end
   end
   
@@ -114,8 +115,13 @@ class PortalSmasher
           str += "scan_ssid=1\n"
           if (enc == "on")
             # This is just a brutal hack. I can be a lot more precise-- specifying CCMP and the like-- but it doesn't matter, weirdly.
-            
-            if net =~ /WPA/
+            wpa = false
+	    data.each do |d|
+		if d =~ /WPA/
+		  wpa = true
+		end
+	    end
+            if wpa
               if (@knownnetworks[ssid]['key']) #Then it's WPA-PSK
                 str += "key_mgmt=WPA-PSK\n"
                 str += "psk=\"#{@knownnetworks[ssid]['key']}\"\n"

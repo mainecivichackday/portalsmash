@@ -86,13 +86,24 @@ class PortalSmasher
       networks.delete_at(0)
     
       usednetworks = {}
-      
+	
+      new_networks = []      
+
       networks.each do |net|
-        data = net.split(/\n/)
+	data = net.split(/\n/)
+        data[3] = data[3].match(/Signal level=-([0-9]{2})/)[1]
+	new_networks << data
+      end
+
+      new_networks.sort! do |a,b| 
+        a[3]<=>b[3]
+      end
+
+      new_networks.each do |data|
         bssid = data[0].match(/([A-F0-9]{2}:[A-F0-9]{2}:[A-F0-9]{2}:[A-F0-9]{2}:[A-F0-9]{2}:[A-F0-9]{2})/)[1]
         ssid = data[5].match(/ESSID\:\"(.*)\"/)[1]
         enc = data[4].match(/Encryption key:(.+)/)[1]
-        
+    
         #So, only proceed if either we know the network, or if there's no encryption -- and either way, only
         #if we haven't done this network before (to prevent trying to connect to 80 different instances of
         #the same WiFi network)7888888
@@ -165,8 +176,9 @@ class PortalSmasher
     end
     puts "Attaching to Network #{@net_counter+1} of #{@number_of_networks}."
     
+    print `wpa_cli get_network #{@net_counter} ssid`
     `wpa_cli select #{@net_counter}`
-    
+
     @net_counter += 1
     
     sleep(5)
